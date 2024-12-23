@@ -6,6 +6,12 @@ $WORKDIR = "C:\work\"
 # 出力ファイル
 $OUTPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 
+# 作業ディレクトリ作成(なければ作成)
+If(!(Test-Path $WORKDIR))
+{
+      New-Item -ItemType Directory -Force -Path $WORKDIR
+}
+
 # 全ユーザの全プロパティを取得し、CSV出力
 get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 
