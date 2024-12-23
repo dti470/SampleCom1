@@ -13,11 +13,46 @@ $OUTPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 
 # 全ユーザの全プロパティを取得し、CSV出力
 get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+```
 
-#  最後の2行はSurname空がいるかの事前チェック、空でもシステムアカウントなら処理しないから問題ない。
-#  ここに普通のユーザっぽいのが表示されたら要注意
+```
+#2 本スクリプトで修正対象外ユーザ(MailAddress無)を抽出1 02-ADData-NoEmailAddress.ps1
+
+# 作業パス
+$WORKDIR = "C:\work\"
+# 入力ファイル
+$INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
+# 出力ファイル
+$INPUTPATH = $WORKDIR + "NoEmailEmailUsers.csv"
+
+# 入力ファイルをCSV取り込み
+$DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
+
+# 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の3つ
+# 1) 有効なアカウントである
+# 2) EmailAddress が空でである
+# 3) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
+$DATALIST | Where-Object { $_.Enabled -eq "True" -and ([string]::IsNullOrEmpty($_.EmailAddress)) -and -not $_.isCriticalSystemObject -eq "True" } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+```
+
+ここから再開
+```
+#3 本スクリプトで修正できないユーザを抽出 03-ADData-GetExclude.ps1
+# 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の2つ
+# 1) Surname(姓)が空ではある
+# 2) 有効なアカウントである
+# 3) GivenName(名)が空である
+# 4) EmailAddress が空でない
+# 5) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
+# 作業パス
+$WORKDIR = "C:\work\"
+# 入力ファイル
+$INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
+# 出力ファイル
+$INPUTPATH = $WORKDIR + "NoSurnameUsers.csv"
+
 $DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
-$DATALIST | Where-Object { ([string]::IsNullOrEmpty($_.Surname)) } | select SamAccountName, EmailAddress
+$DATALIST | Where-Object { ([string]::IsNullOrEmpty($_.Surname)) } | select SamAccountName, EmailAddress, Disting
 ```
 
 ```
@@ -33,10 +68,11 @@ $OUTPUTPATH = $WORKDIR + "ChangeActiveAndNoGivenName.csv"
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
 # 入力ファイルから修正対象行を抽出、条件は下記4つ
-# 1) 有効なアカウントである
-# 2) GivenName(名)が空である
-# 3) EmailAddress が空でない
-# 4) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性 
+# 1) Surname(姓)が空ではない
+# 2) 有効なアカウントである
+# 3) GivenName(名)が空である
+# 4) EmailAddress が空でない
+# 5) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性 
 $EXTRACTION = $DATALIST | Where-Object { $_.Enabled -eq "True" -and ([string]::IsNullOrEmpty($_.GivenName)) -and -not ([string]::IsNullOrEmpty($_.EmailAddress)) -and -not $_.isCriticalSystemObject -eq "True" }
 
 # 抽出した対象行の Surname(性)の最後の一文字を除いた文字を抽出し、新しい列を行に追加(更新後のSurname(姓)になる)。文字が一文字しかない場合は、新しい列にはそのまま一文字が入り、空にはならない。
