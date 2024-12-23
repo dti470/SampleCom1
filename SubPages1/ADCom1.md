@@ -1,6 +1,6 @@
-
+```
 #1 作業前の情報出力
-$  最後の2行はSurname空がいるかの事前チェック、空でもシステムアカウントなら処理しないから問題ない。
+#  最後の2行はSurname空がいるかの事前チェック、空でもシステムアカウントなら処理しないから問題ない。
 $WORKDIR = "C:\work\"
 $OUTPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 
@@ -8,9 +8,9 @@ get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OU
 
 $DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
 $DATALIST | Where-Object { ([string]::IsNullOrEmpty($_.Surname)) } | select SamAccountName, EmailAddress
+```
 
-
-
+```
 #2 設定変更対象の抽出と更新列の作成
 $WORKDIR = "C:\work\"
 $INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
@@ -30,9 +30,9 @@ $EXTRACTION | ForEach-Object {
 
     $_
 } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+```
 
-
-
+```
 #3 設定更新と作業後の情報出力
 $WORKDIR = "C:\work\"
 $INPUTPATH = $WORKDIR + "ChangeActiveAndNoGivenName.csv"
@@ -49,3 +49,4 @@ foreach ($USER in $DATALIST) {
 }
 
 get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+```
