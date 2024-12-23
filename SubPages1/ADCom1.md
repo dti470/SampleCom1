@@ -122,8 +122,9 @@ foreach ($ROW1 in $INPUTFILE1) {
     }
 }
 
-# 結果を表示
-$COMPARISONRESULTS | Format-Table -Property SamAccountName, DisplayNameMatch
+# 結果を表示 数が多い場合は以下の通りコメントアウト
+# $COMPARISONRESULTS | Format-Table -Property SamAccountName, DisplayNameMatch
 
+# 結果をCSVファイルへ出力
 $COMPARISONRESULTS | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
