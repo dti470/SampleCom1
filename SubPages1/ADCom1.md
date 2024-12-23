@@ -1,16 +1,13 @@
 ```
-#1 作業前の情報出力　01-ADData-Get.ps1
+#0 以下4つのスクリプトを c:\work ディレクトリへ保存します。
+#PowerShellを管理者権限で起動し、各ps1スクリプトを実行するか、
+#PowerShellISEを管理者権限で起動し、スクリプトを読み込んで実行します。
 
+#1 作業前の情報出力　01-ADData-Get.ps1
 # 作業パス
 $WORKDIR = "C:\work\"
 # 出力ファイル
 $OUTPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
-
-# 作業ディレクトリ作成(なければ作成)
-If(!(Test-Path $WORKDIR))
-{
-      New-Item -ItemType Directory -Force -Path $WORKDIR
-}
 
 # 全ユーザの全プロパティを取得し、CSV出力
 get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
