@@ -181,3 +181,16 @@ foreach ($ROW1 in $INPUTFILE1) {
 # 結果をCSVファイルへ出力
 $COMPARISONRESULTS | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
+
+
+<pre>
+  <code id="myCode">
+  // ここにコピーしたいコードを記述
+
+# テスト
+# 結果をCSVファイルへ出力
+$COMPARISONRESULTS | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+
+  </code>
+  <button onclick="copyToClipboard('myCode')">Copy</button>
+</pre>
