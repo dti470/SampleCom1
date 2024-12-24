@@ -98,16 +98,18 @@ $COMPARISONRESULTS = @()
 
 # ファイル1 と ファイル2 の各行を比較
 # 一致キーは、SamAccountName
-# 比較する値は、MailAddress
+# 比較する値は、作業前後のEmailAddress
 # MailAddressMatch が、Trueなら問題なし。Falseなら要確認
 foreach ($ROW1 in $INPUTFILE1) {
 
     $ROW2 = $INPUTFILE2 | Where-Object { $_.SamAccountName -eq $ROW1.SamAccountName }
 
     if ($ROW2) {
-        $isMailAddressMatch = $ROW1.MailAddress -eq $ROW2.MailAddres
+        $isMailAddressMatch = $ROW1.EmailAddress -eq $ROW2.EmailAddress
 
-        # 一致しなかった場合は、本作業でMailAddressを追加した行なので、AddMailAddressList1と比較する。
+        # 一致しなかった場合で、今回追加したメールアドレスに一致する場合はOK
+        # 一致キーは、SamAccountName
+        # 比較する値は、EmailAddress と NewEmailAddress
         if($isMailAddressMatch) {
             # 比較結果を格納(入力ファイル1と2比較)
             $COMPARISONRESULTS += [PSCustomObject]@{
@@ -117,11 +119,11 @@ foreach ($ROW1 in $INPUTFILE1) {
         }
         else {
             $ROW3 = $INPUTFILE3 | Where-Object { $_.SamAccountName -eq $ROW2.SamAccountName }
-            $isMailAddressMatch = $ROW2.MailAddress -eq $ROW3.MailAddres
+            $isMailAddressMatch = $ROW2.EmailAddress -eq $ROW3.NewEmailAddress
 
             # 比較結果を格納(入力ファイル2と3比較)
             $COMPARISONRESULTS += [PSCustomObject]@{
-            SamAccountName = $ROW2.SamAccountName
+            SamAccountName = $ROW1.SamAccountName
             MailAddressMatch = $isMailAddressMatch
             }
         }
