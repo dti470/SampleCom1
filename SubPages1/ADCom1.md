@@ -87,7 +87,7 @@ $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 # 5) クリティカルシステムアカウントではない
 #    ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
 $EXTRACTION = $DATALIST | Where-Object {
-                                         not ([string]::IsNullOrEmpty($_.Surname)) `
+                                         -not ([string]::IsNullOrEmpty($_.Surname)) `
                                          -and $_.Enabled -eq "True" `
                                          -and ([string]::IsNullOrEmpty($_.GivenName)) `
                                          -and -not ([string]::IsNullOrEmpty($_.EmailAddress)) `
