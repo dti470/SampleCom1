@@ -27,15 +27,17 @@ $INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 $OUTPUTPATH = $WORKDIR + "NoEmailEmailUsers.csv"
 
 # 入力ファイルをCSV取り込み
-$DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
+$DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
 
 # 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の3つ
 # 1) 有効なアカウントである
 # 2) EmailAddress が空でである
-# 3) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
-$DATALIST | Where-Object { $_.Enabled -eq "True" 
-                            -and ([string]::IsNullOrEmpty($_.EmailAddress)) 
-                            -and -not $_.isCriticalSystemObject -eq "True" 
+# 3) クリティカルシステムアカウントではない
+#    ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
+$DATALIST | Where-Object {
+                             $_.Enabled -eq "True" `
+                            -and ([string]::IsNullOrEmpty($_.EmailAddress)) `
+                            -and -not $_.isCriticalSystemObject -eq "True" `
                             } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
 
@@ -58,13 +60,15 @@ $DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
 # 2) 有効なアカウントである
 # 3) GivenName(名)が空である
 # 4) EmailAddress が空でない
-# 5) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
-$EXTRACTION = $DATALIST | Where-Object { ([string]::IsNullOrEmpty($_.Surname))
-                                         -and $_.Enabled -eq "True"
-                                         -and ([string]::IsNullOrEmpty($_.GivenName))
-                                         -and -not ([string]::IsNullOrEmpty($_.EmailAddress))
-                                         -and -not $_.isCriticalSystemObject -eq "True"
-                                          } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+# 5) クリティカルシステムアカウントではない
+#    ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
+$DATALIST | Where-Object {
+                            ([string]::IsNullOrEmpty($_.Surname)) `
+                            -and $_.Enabled -eq "True" `
+                            -and ([string]::IsNullOrEmpty($_.GivenName)) `
+                            -and -not ([string]::IsNullOrEmpty($_.EmailAddress)) `
+                            -and -not $_.isCriticalSystemObject -eq "True" `
+                            } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
 
 ```
@@ -84,12 +88,14 @@ $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 # 2) 有効なアカウントである
 # 3) GivenName(名)が空である
 # 4) EmailAddress が空でない
-# 5) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性 
-$EXTRACTION = $DATALIST | Where-Object { not ([string]::IsNullOrEmpty($_.Surname))
-                                         -and $_.Enabled -eq "True"
-                                         -and ([string]::IsNullOrEmpty($_.GivenName))
-                                         -and -not ([string]::IsNullOrEmpty($_.EmailAddress))
-                                         -and -not $_.isCriticalSystemObject -eq "True"
+# 5) クリティカルシステムアカウントではない
+#    ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
+$EXTRACTION = $DATALIST | Where-Object {
+                                         not ([string]::IsNullOrEmpty($_.Surname)) `
+                                         -and $_.Enabled -eq "True" `
+                                         -and ([string]::IsNullOrEmpty($_.GivenName)) `
+                                         -and -not ([string]::IsNullOrEmpty($_.EmailAddress)) `
+                                         -and -not $_.isCriticalSystemObject -eq "True" `
                                           }
 
 # 抽出した対象行の Surname(性)の最後の一文字を除いた文字を抽出し、新しい列を行に追加(更新後のSurname(姓)になる)。文字が一文字しかない場合は、新しい列にはそのまま一文字が入り、空にはならない。
