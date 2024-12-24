@@ -24,7 +24,7 @@ $WORKDIR = "C:\work\"
 # 入力ファイル
 $INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 # 出力ファイル
-$INPUTPATH = $WORKDIR + "NoEmailEmailUsers.csv"
+$OUTPUTPATH = $WORKDIR + "NoEmailEmailUsers.csv"
 
 # 入力ファイルをCSV取り込み
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
@@ -48,7 +48,7 @@ $WORKDIR = "C:\work\"
 # 入力ファイル
 $INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 # 出力ファイル
-$INPUTPATH = $WORKDIR + "NoSurnameUsers.csv"
+$OUTPUTPATH = $WORKDIR + "NoSurnameUsers.csv"
 
 # 入力ファイルをCSV取り込み
 $DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
