@@ -27,7 +27,7 @@ $INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 $OUTPUTPATH = $WORKDIR + "NoEmailEmailUsers.csv"
 
 # 入力ファイルをCSV取り込み
-$DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
+$DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
 # 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の3つ
 # 1) 有効なアカウントである
@@ -53,7 +53,7 @@ $INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 $OUTPUTPATH = $WORKDIR + "NoSurnameUsers.csv"
 
 # 入力ファイルをCSV取り込み
-$DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
+$DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
 # 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の5つ
 # 1) Surname(姓)が空である
