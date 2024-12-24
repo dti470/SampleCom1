@@ -48,7 +48,7 @@ NoEmailEmailUsers.csv を「AddMailAddressList1.csv」とコピーして、
 ```
 
 ```
-#3 設定更新と作業後の情報出力 02-ADData-AddMailAddress.ps1
+#3 設定更新と作業後の情報出力 03-ADData-AddMailAddress.ps1
 # Surname と NewEmailAddress 列があるCSVを読み込んで、EmailAddressを追加
 # 作業パス
 $WORKDIR = "C:\work\"
@@ -141,16 +141,3 @@ foreach ($ROW1 in $INPUTFILE1) {
 # 結果をCSVファイルへ出力
 $COMPARISONRESULTS | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
-
-
-<pre>
-  <code id="myCode">
-  // ここにコピーしたいコードを記述
-
-# テスト
-# 結果をCSVファイルへ出力
-$COMPARISONRESULTS | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
-
-  </code>
-  <button onclick="copyToClipboard('myCode')">Copy</button>
-</pre>
