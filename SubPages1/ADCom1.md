@@ -40,7 +40,7 @@ $DATALIST | Where-Object { $_.Enabled -eq "True"
 ```
 
 ```
-#3 本スクリプトで修正対象外ユーザ(Surname無)を抽出2 03-ADData-GetExclude.ps1
+#3 本スクリプトで修正対象外ユーザ(Surname無)を抽出2 03-ADData-NoSurname.ps1
 # 後続の#5でGivenName空の場合、GivenNameは修正されない
 # 個別調査対象アカウントになる
 # 作業パス
