@@ -30,13 +30,13 @@ $OUTPUTPATH = $WORKDIR + "NoEmailEmailUsers.csv"
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
 # 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の3つ
-# 1) 有効なアカウントである
-# 2) EmailAddress が空でである
+# 1) EmailAddress が空でである
+# 2) 有効なアカウントである
 # 3) クリティカルシステムアカウントではない
 #    ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
 $DATALIST | Where-Object {
-                             $_.Enabled -eq "True" `
-                            -and ([string]::IsNullOrEmpty($_.EmailAddress)) `
+                            ([string]::IsNullOrEmpty($_.EmailAddress)) ` 
+                            -and $_.Enabled -eq "True" `
                             -and -not $_.isCriticalSystemObject -eq "True" `
                             } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
@@ -55,18 +55,14 @@ $OUTPUTPATH = $WORKDIR + "NoSurnameUsers.csv"
 # 入力ファイルをCSV取り込み
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
-# 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の5つ
+# 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の3つ
 # 1) Surname(姓)が空である
 # 2) 有効なアカウントである
-# 3) GivenName(名)が空である
-# 4) EmailAddress が空でない
-# 5) クリティカルシステムアカウントではない
+# 3) クリティカルシステムアカウントではない
 #    ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
 $DATALIST | Where-Object {
                             ([string]::IsNullOrEmpty($_.Surname)) `
                             -and $_.Enabled -eq "True" `
-                            -and ([string]::IsNullOrEmpty($_.GivenName)) `
-                            -and -not ([string]::IsNullOrEmpty($_.EmailAddress)) `
                             -and -not $_.isCriticalSystemObject -eq "True" `
                             } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
@@ -83,7 +79,7 @@ $OUTPUTPATH = $WORKDIR + "ChangeActiveAndNoGivenName.csv"
 # 入力ファイルをCSV取り込み
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
-# 入力ファイルから修正対象行を抽出、条件は下記4つ
+# 入力ファイルから修正対象行を抽出、条件は下記5つ
 # 1) Surname(姓)が空でない
 # 2) 有効なアカウントである
 # 3) GivenName(名)が空である
