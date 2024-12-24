@@ -1,7 +1,7 @@
 ```
-#0 以下4つのスクリプトを c:\work ディレクトリへ保存します。
+#0 以下6つのスクリプトを c:\work ディレクトリへ保存します。
 #PowerShellを管理者権限で起動し、各ps1スクリプトを実行するか、
-#PowerShellISEを管理者権限で起動し、スクリプトを読み込んで実行します。
+#PowerShell ISEを管理者権限で起動し、スクリプトを読み込んで実行します。
 ```
 
 ```
@@ -196,16 +196,3 @@ foreach ($ROW1 in $INPUTFILE1) {
 # 結果をCSVファイルへ出力
 $COMPARISONRESULTS | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
-
-
-<pre>
-  <code id="myCode">
-  // ここにコピーしたいコードを記述
-
-# テスト
-# 結果をCSVファイルへ出力
-$COMPARISONRESULTS | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
-
-  </code>
-  <button onclick="copyToClipboard('myCode')">Copy</button>
-</pre>
