@@ -17,7 +17,8 @@ get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OU
 
 ```
 #2 本スクリプトで修正対象外ユーザ(MailAddress無)を抽出1 02-ADData-NoEmailAddress.ps1
-
+# 後続の#5でGivenName空の場合、GivenNameは修正される可能性がある
+# 個別調査対象アカウント扱いになる
 # 作業パス
 $WORKDIR = "C:\work\"
 # 入力ファイル
@@ -32,18 +33,16 @@ $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 # 1) 有効なアカウントである
 # 2) EmailAddress が空でである
 # 3) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
-$DATALIST | Where-Object { $_.Enabled -eq "True" -and ([string]::IsNullOrEmpty($_.EmailAddress)) -and -not $_.isCriticalSystemObject -eq "True" } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+$DATALIST | Where-Object { $_.Enabled -eq "True" 
+                            -and ([string]::IsNullOrEmpty($_.EmailAddress)) 
+                            -and -not $_.isCriticalSystemObject -eq "True" 
+                            } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
 
-ここから再開
 ```
-#3 本スクリプトで修正できないユーザを抽出 03-ADData-GetExclude.ps1
-# 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の2つ
-# 1) Surname(姓)が空ではある
-# 2) 有効なアカウントである
-# 3) GivenName(名)が空である
-# 4) EmailAddress が空でない
-# 5) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
+#3 本スクリプトで修正対象外ユーザ(Surname無)を抽出2 03-ADData-GetExclude.ps1
+# 後続の#5でGivenName空の場合、GivenNameは修正されない
+# 個別調査対象アカウントになる
 # 作業パス
 $WORKDIR = "C:\work\"
 # 入力ファイル
@@ -51,12 +50,25 @@ $INPUTPATH = $WORKDIR + "BeforeAllUserList1.csv"
 # 出力ファイル
 $INPUTPATH = $WORKDIR + "NoSurnameUsers.csv"
 
+# 入力ファイルをCSV取り込み
 $DATALIST = Import-Csv $OUTPUTPATH -Encoding UTF8
-$DATALIST | Where-Object { ([string]::IsNullOrEmpty($_.Surname)) } | select SamAccountName, EmailAddress, Disting
+
+# 入力ファイルから本スクリプトで修正外(必要に応じて手修正予定)ユーザの抽出、条件は以下の5つ
+# 1) Surname(姓)が空である
+# 2) 有効なアカウントである
+# 3) GivenName(名)が空である
+# 4) EmailAddress が空でない
+# 5) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性
+$EXTRACTION = $DATALIST | Where-Object { ([string]::IsNullOrEmpty($_.Surname))
+                                         -and $_.Enabled -eq "True"
+                                         -and ([string]::IsNullOrEmpty($_.GivenName))
+                                         -and -not ([string]::IsNullOrEmpty($_.EmailAddress))
+                                         -and -not $_.isCriticalSystemObject -eq "True"
+                                          } | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
 ```
 
 ```
-#2 設定変更対象の抽出と更新列の作成 02-ADData-Extraction-Create.ps1
+#4 設定変更対象の抽出と更新列の作成 04-ADData-Extraction-Create.ps1
 # 作業パス
 $WORKDIR = "C:\work\"
 # 入力ファイル
@@ -68,12 +80,17 @@ $OUTPUTPATH = $WORKDIR + "ChangeActiveAndNoGivenName.csv"
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
 # 入力ファイルから修正対象行を抽出、条件は下記4つ
-# 1) Surname(姓)が空ではない
+# 1) Surname(姓)が空でない
 # 2) 有効なアカウントである
 # 3) GivenName(名)が空である
 # 4) EmailAddress が空でない
 # 5) クリティカルシステムアカウントではない ※ 管理者アカウントなどを除外 isCriticalSystemObjectは、AADCなどでTrueの場合は、デフォルトで同期対象外となる属性 
-$EXTRACTION = $DATALIST | Where-Object { $_.Enabled -eq "True" -and ([string]::IsNullOrEmpty($_.GivenName)) -and -not ([string]::IsNullOrEmpty($_.EmailAddress)) -and -not $_.isCriticalSystemObject -eq "True" }
+$EXTRACTION = $DATALIST | Where-Object { not ([string]::IsNullOrEmpty($_.Surname))
+                                         -and $_.Enabled -eq "True"
+                                         -and ([string]::IsNullOrEmpty($_.GivenName))
+                                         -and -not ([string]::IsNullOrEmpty($_.EmailAddress))
+                                         -and -not $_.isCriticalSystemObject -eq "True"
+                                          }
 
 # 抽出した対象行の Surname(性)の最後の一文字を除いた文字を抽出し、新しい列を行に追加(更新後のSurname(姓)になる)。文字が一文字しかない場合は、新しい列にはそのまま一文字が入り、空にはならない。
 # 抽出した対象行の Surname(性)の最後の一文字を抽出し、新しい列を行に追加(更新後のGivenName(名)になる)。
@@ -89,7 +106,7 @@ $EXTRACTION | ForEach-Object {
 ```
 
 ```
-#3 設定更新と作業後の情報出力 03-ADData-Update.ps1
+#5 設定更新と作業後の情報出力 05-ADData-Update.ps1
 # 作業パス
 $WORKDIR = "C:\work\"
 # 入力ファイル
@@ -114,7 +131,7 @@ get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OU
 ```
 
 ```
-#4 DisplayName にずれがないかチェック 04-ADData-Diff-DisplayName.ps1
+#6 DisplayName にずれがないかチェック 06-ADData-Diff-DisplayName.ps1
 # 作業パス
 $WORKDIR = "C:\work\"
 # 入力ファイル1 作業前
