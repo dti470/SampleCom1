@@ -61,12 +61,12 @@ $OUTPUTPATH = $WORKDIR + "AfterAllUserList1.csv"
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
 
 # 入力ファイルCSVのSamAccountName と一致するアカウントを更新
-# EmailAddressが空の場合のみ追加
+# EmailAddressのみ追加
 foreach ($USER in $DATALIST) {
     $SAMACCOUNTNAME = $USER.SamAccountName
     Set-ADUser -Identity $SAMACCOUNTNAME -EmailAddress $USER.NewEmailAddress
 
-    Write-Host "Updated user $SAMACCOUNTNAME with EmailAddress: $($USER.NewEmailAddress)
+    Write-Host "Updated user $SAMACCOUNTNAME with EmailAddress: $($USER.NewEmailAddress)"
 }
 
 get-ADUser -filter {objectClass -eq "user"} -Properties * | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
