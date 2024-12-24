@@ -96,11 +96,24 @@ $EXTRACTION = $DATALIST | Where-Object {
 
 # 抽出した対象行の Surname(性)の最後の一文字を除いた文字を抽出し、新しい列を行に追加(更新後のSurname(姓)になる)。文字が一文字しかない場合は、新しい列にはそのまま一文字が入り、空にはならない。
 # 抽出した対象行の Surname(性)の最後の一文字を抽出し、新しい列を行に追加(更新後のGivenName(名)になる)。
+#$EXTRACTION | ForEach-Object {
+#    $WITHOUTLASTCHAR = if ($_.Surname.Length -gt 1) { $_.Surname.Substring(0, $_.Surname.Length - 1) } else { $_Surname }
+#    $_ | Add-Member -MemberType NoteProperty -Name "SurnameWithoutLastCharNewSurname" -Value $WITHOUTLASTCHAR
+
+#    $LASTCHAR = $_.Surname[-1]
+#    $_ | Add-Member -MemberType NoteProperty -Name "SurnameLastcharNewGiveName" -Value $LASTCHAR
+
+#    $_
+#} | Export-Csv -Path $OUTPUTPATH -NoTypeInformation -Encoding UTF8
+
 $EXTRACTION | ForEach-Object {
-    $WITHOUTLASTCHAR = if ($_.Surname.Length -gt 1) { $_.Surname.Substring(0, $_.Surname.Length - 1) } else { $_Surname }
+    
+    $NBSURNAME = $_.Surname.TrimEnd()
+
+    $WITHOUTLASTCHAR = if ($NBSURNAME.Length -gt 1) { $NBSURNAME.Substring(0, $NBSURNAME.Length - 1) } else { $NBSURNAME }
     $_ | Add-Member -MemberType NoteProperty -Name "SurnameWithoutLastCharNewSurname" -Value $WITHOUTLASTCHAR
 
-    $LASTCHAR = $_.Surname[-1]
+    $LASTCHAR = $NBSURNAME[-1]
     $_ | Add-Member -MemberType NoteProperty -Name "SurnameLastcharNewGiveName" -Value $LASTCHAR
 
     $_
