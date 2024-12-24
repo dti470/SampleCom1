@@ -55,7 +55,7 @@ $WORKDIR = "C:\work\"
 # 入力ファイル
 $INPUTPATH = $WORKDIR + "AddMailAddressList1.csv"
 # 出力ファイル
-# $OUTPUTPATH = $WORKDIR + "AfterAllUserList1.csv"
+$OUTPUTPATH = $WORKDIR + "AfterAllUserList1.csv"
 
 # 入力ファイルをCSV取り込み
 $DATALIST = Import-Csv $INPUTPATH -Encoding UTF8
