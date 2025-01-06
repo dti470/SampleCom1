@@ -4,6 +4,12 @@
 
 Entra → WriteBack → AD → GWS 反映されます。
 
+同期に使用するアカウントは、事前に下記へログインして利用規約へ承諾が必要です。
+https://console.cloud.google.com/
+https://admin.google.com/
+MFAも有効にしよう。
+※Python実行アカウントと異なっても良い。両方とも特権管理者アカウントです。
+
 1) サービスアカウント作成が許可されてるかチェック
 特権管理者で以下へログイン
 https://console.cloud.google.com/
@@ -74,3 +80,5 @@ https://mysignins.microsoft.com/security-info/password/change
 
 GWS初回ログイン時のパスワード変更を無効化しないとせっかくEntraで変更しても、
 また変更してくれと言われます。
+
+[回避設定](https://dti470.github.io/SampleCom1/SubPages1/Pic/ForceChangePass.png)
