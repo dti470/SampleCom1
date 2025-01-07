@@ -1,4 +1,4 @@
-'''
+```
 # Microsoft Graphモジュールがインストールされているか確認
 $moduleName = "Microsoft.Graph"
 $module = Get-InstalledModule -Name $moduleName -ErrorAction SilentlyContinue
@@ -27,9 +27,9 @@ if (-not $module) {
         Write-Host "最新バージョンのMicrosoft Graphモジュールがすでにインストールされています。" -ForegroundColor Green
     }
 }
-'''
+```
 
-'''
+```
 # Microsoft Graphモジュールをインポート
 # Import-Module Microsoft.Graph
 
@@ -114,7 +114,7 @@ Write-Host $logMessage
 
 # Microsoft Graphから切断
 Disconnect-MgGraph
-'''
+```
 
 [参考1](https://dti470.github.io/SampleCom1/SubPages1/Pic/1.png "参考1")
 [参考2](https://dti470.github.io/SampleCom1/SubPages1/Pic/2.png "参考2")

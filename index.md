@@ -7,4 +7,4 @@ Top Page
 
 [GWS Password Sync](https://dti470.github.io/SampleCom1/SubPages1/PasswordSync.html)
 
-[GWS Password Sync](https://dti470.github.io/SampleCom1/SubPages1/GroupAdd.html)
+[Entra Group](https://dti470.github.io/SampleCom1/SubPages1/GroupAdd.html)
