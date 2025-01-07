@@ -116,3 +116,7 @@ Write-Host $logMessage
 Disconnect-MgGraph
 '''
 
+[参考1](https://dti470.github.io/SampleCom1/SubPages1/Pic/1.png "参考1")
+[参考2](https://dti470.github.io/SampleCom1/SubPages1/Pic/2.png "参考2")
+[参考3](https://dti470.github.io/SampleCom1/SubPages1/Pic/3.png "参考3")
+[参考4](https://dti470.github.io/SampleCom1/SubPages1/Pic/4.png "参考4")
