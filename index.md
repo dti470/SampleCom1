@@ -8,3 +8,5 @@ Top Page
 [GWS Password Sync](https://dti470.github.io/SampleCom1/SubPages1/PasswordSync.html)
 
 [Entra Group](https://dti470.github.io/SampleCom1/SubPages1/GroupAdd.html)
+
+[CustomPolicy](https://dti470.github.io/SampleCom1/SubPages1/CustomPolicy.html)
