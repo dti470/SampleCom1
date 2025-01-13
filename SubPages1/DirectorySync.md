@@ -32,7 +32,8 @@ c:\ProgaramData\gcds
 ## その他を先に
 ログファイルの出力先：Directory Sync(Congig.xml)と同じになる。Loggingタブで指定してる場所です。<br>
 レポート出力先：出力されない。<br>
-　　　　　　　　Directory Sync 手動実行だと出力される、実行ユーザの C:\Users\<実行ユーザ名>\GADS_reports 配下のhtmlが出力されない。<br>
+　　　　　　　　Directory Sync 手動実行だと出力される、<br>
+　　　　　　　　実行ユーザの C:\Users\<実行ユーザ名>\GADS_reports 配下のhtmlが出力されない。<br>
 　　　　　　　　内容は、手動実行の画面で表示されるサマリです。<br>
 　　　　　　　　同等の内容は、上のログに入ってます。<br>
 認証：ユーザCのパスワード変更すると下記4)再実行になるようです。<br>
@@ -64,8 +65,8 @@ import-module ActiveDirectory
    ```
    $dom = [xml](Get-Content -Encoding UTF8 $rawConfigPath)
    ```
-4) コピペ実行でOK
-   この作業を実施してるユーザのパスワード変更したら多分再実行
+4) コピペ実行でOK <br>
+   ユーザCのパスワード変更したら多分再実行
 
 5) タスク登録 上記デフォじゃないと修正必要 <br>
    2行目の 変数が config.xml と sync.ps1 置き場 <br>
