@@ -9,6 +9,8 @@ Top Page
 
 [Entra Group](https://dti470.github.io/SampleCom1/SubPages1/GroupAdd.html)
 
+[AD Group](https://dti470.github.io/SampleCom1/SubPages1/AD-GroupAdd.html)
+
 [CustomPolicy](https://dti470.github.io/SampleCom1/SubPages1/CustomPolicy.html)
 
 [GWS Directory Sync](https://dti470.github.io/SampleCom1/SubPages1/DirectorySync.html)
