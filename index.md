@@ -14,3 +14,5 @@ Top Page
 [CustomPolicy](https://dti470.github.io/SampleCom1/SubPages1/CustomPolicy.html)
 
 [GWS Directory Sync](https://dti470.github.io/SampleCom1/SubPages1/DirectorySync.html)
+
+[Edge OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/EdgeOMAURI.html)
