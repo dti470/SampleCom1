@@ -16,3 +16,5 @@ Top Page
 [GWS Directory Sync](https://dti470.github.io/SampleCom1/SubPages1/DirectorySync.html)
 
 [Edge OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/EdgeOMAURI.html)
+
+[Entra-GWS-SAML](https://dti470.github.io/SampleCom1/SubPages1/Entra-GES-SAML.html)
