@@ -17,4 +17,4 @@ Top Page
 
 [Edge OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/EdgeOMAURI.html)
 
-[Entra-GWS-SAML](https://dti470.github.io/SampleCom1/SubPages1/Entra-GES-SAML.html)
+[Entra-GWS-SAML](https://dti470.github.io/SampleCom1/SubPages1/Entra-GWS-SAML.html)
