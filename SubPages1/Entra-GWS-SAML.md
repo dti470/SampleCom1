@@ -3,16 +3,14 @@
 # Federation時
 ```
 # 接続前処理
-$clientId = "<クライアントID>"
-$clientSecret_plain = "<クライアントシークレット>"
-$clientSecret = ConvertTo-SecureString -String $clientSecret_plain -AsPlainText -Force
-$tenantId = "<テナントID>"
-$scope = "https://graph.microsoft.com/.default"
-$oauth = Get-MsalToken -ClientId $clientId -TenantId $tenantId -ClientSecret $clientSecret -Scopes $scope
-$accessToken = ConvertTo-SecureString -String $oauth.AccessToken -AsPlainText -Force  
+$ApplicationClientId = "<クライアントID>"
+$ApplicationClientSecret = "<クライアントシークレット>"
+$TenantId = "<テナントID>"
+$SecureClientSecret = ConvertTo-SecureString -String $ApplicationClientSecret -AsPlainText -Force
+$ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationClientId, $SecureClientSecret
 
 # 接続
-Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Domain.ReadWrite.All", "User.ReadWrite.All" -AccessToken $accessToken
+Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential
 
 # 確認
 Get-MgDomain
@@ -64,16 +62,15 @@ Disconnect-MgGraph
 # Manage時
 ```
 # 接続前処理
-$clientId = "<クライアントID>"
-$clientSecret_plain = "<クライアントシークレット>"
-$clientSecret = ConvertTo-SecureString -String $clientSecret_plain -AsPlainText -Force
-$tenantId = "<テナントID>"
-$scope = "https://graph.microsoft.com/.default"
-$oauth = Get-MsalToken -ClientId $clientId -TenantId $tenantId -ClientSecret $clientSecret -Scopes $scope
-$accessToken = ConvertTo-SecureString -String $oauth.AccessToken -AsPlainText -Force  
+$ApplicationClientId = "<クライアントID>"
+$ApplicationClientSecret = "<クライアントシークレット>"
+$TenantId = "<テナントID>"
+$SecureClientSecret = ConvertTo-SecureString -String $ApplicationClientSecret -AsPlainText -Force
+$ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationClientId, $SecureClientSecret
 
 # 接続
-Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Domain.ReadWrite.All", "User.ReadWrite.All" -AccessToken $accessToken
+Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential
+
 
 # 確認
 Get-MgDomain
