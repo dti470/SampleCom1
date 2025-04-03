@@ -5,6 +5,9 @@
 # 接続
 Connect-MgGraph -Scopes "Directory.AccessAsUser.All", "Domain.ReadWrite.All","User.ReadWrite.All"
 
+# 確認
+Get-MgDomain
+
 # Fedrationするドメイン名
 $DomainName    = "<ドメイン名>"
 
@@ -40,6 +43,9 @@ New-MgDomainFederationConfiguration -DomainId $DomainName `
                                     -SignOutUri $LogOffUri `
                                     -PreferredAuthenticationProtocol $PreferredAuthenticationProtocol ;
 
+# 確認
+Get-MgDomain
+
 Disconnect-MgGraph
 ```
 
@@ -48,12 +54,18 @@ Disconnect-MgGraph
 # 接続
 Connect-MgGraph -Scopes "Directory.AccessAsUser.All", "Domain.ReadWrite.All","User.ReadWrite.All"
 
+# 確認
+Get-MgDomain
+
 # Managedにするドメイン名
 $DomainName    = "<ドメイン名>"
 
 $DomainId = (Get-MgDomainFederationConfiguration -DomainId $DomainName).Id
 
 Remove-MgDomainFederationConfiguration -DomainId $DomainName -InternalDomainFederationId $DomainId
+
+# 確認
+Get-MgDomain
 
 Disconnect-MgGraph
 ```
