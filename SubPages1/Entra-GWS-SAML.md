@@ -2,8 +2,17 @@
 
 # Federation時
 ```
+# 接続前処理
+$clientId = "<クライアントID>"
+$clientSecret_plain = "<クライアントシークレット>"
+$clientSecret = ConvertTo-SecureString -String $clientSecret_plain -AsPlainText -Force
+$tenantId = "<テナントID>"
+$scope = "https://graph.microsoft.com/.default"
+$oauth = Get-MsalToken -ClientId $clientId -TenantId $tenantId -ClientSecret $clientSecret -Scopes $scope
+$accessToken = ConvertTo-SecureString -String $oauth.AccessToken -AsPlainText -Force  
+
 # 接続
-Connect-MgGraph -Scopes "Directory.AccessAsUser.All", "Domain.ReadWrite.All","User.ReadWrite.All"
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Domain.ReadWrite.All", "User.ReadWrite.All" -AccessToken $accessToken
 
 # 確認
 Get-MgDomain
@@ -52,10 +61,19 @@ Get-MgDomain
 Disconnect-MgGraph
 ```
 
-# Manage時 (Get-MgDomain で設定確認可能)
+# Manage時
 ```
+# 接続前処理
+$clientId = "<クライアントID>"
+$clientSecret_plain = "<クライアントシークレット>"
+$clientSecret = ConvertTo-SecureString -String $clientSecret_plain -AsPlainText -Force
+$tenantId = "<テナントID>"
+$scope = "https://graph.microsoft.com/.default"
+$oauth = Get-MsalToken -ClientId $clientId -TenantId $tenantId -ClientSecret $clientSecret -Scopes $scope
+$accessToken = ConvertTo-SecureString -String $oauth.AccessToken -AsPlainText -Force  
+
 # 接続
-Connect-MgGraph -Scopes "Directory.AccessAsUser.All", "Domain.ReadWrite.All","User.ReadWrite.All"
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Domain.ReadWrite.All", "User.ReadWrite.All" -AccessToken $accessToken
 
 # 確認
 Get-MgDomain
