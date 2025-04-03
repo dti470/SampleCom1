@@ -10,7 +10,8 @@ $SecureClientSecret = ConvertTo-SecureString -String $ApplicationClientSecret -A
 $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationClientId, $SecureClientSecret
 
 # 接続
-Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential
+#Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential
+Connect-MgGraph -Scopes "Directory.AccessAsUser.All", "Domain.Read.All"
 
 # 確認
 Get-MgDomain
@@ -69,7 +70,8 @@ $SecureClientSecret = ConvertTo-SecureString -String $ApplicationClientSecret -A
 $ClientSecretCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationClientId, $SecureClientSecret
 
 # 接続
-Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential
+#Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $ClientSecretCredential
+Connect-MgGraph -Scopes "Directory.AccessAsUser.All", "Domain.Read.All"
 
 
 # 確認
