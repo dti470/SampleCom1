@@ -9,7 +9,10 @@ Connect-MgGraph -Scopes "Directory.AccessAsUser.All", "Domain.ReadWrite.All","Us
 Get-MgDomain
 
 # Fedrationするドメイン名
-$DomainName    = "<ドメイン名>"
+$DomainName = "<ドメイン名>"
+
+# 任意の表示名
+$DisplayName = "Google Cloud Identity"
 
 # Fedration設定(EntraMFA要求時の動作)
 # https://learn.microsoft.com/ja-jp/graph/api/resources/internaldomainfederation?view=graph-rest-1.0#federatedidpmfabehavior-values
@@ -18,23 +21,23 @@ $DomainName    = "<ドメイン名>"
 $FederatedIdpMfaBehavior = "rejectMfaByFederatedIdp"
 
 # GWS側で表示されるSSO URLを記載
-$PassiveLogOnUrl = "<GWSで表示されるURL>"
-$ActiveLogOnUri = "<GWSで表示されるURL>"
+$PassiveLogOnUrl = "<GWSで表示されるSSOのURL>"
+$ActiveLogOnUri = "<GWSで表示されるSSOのURL>"
 
-# GWS側で表示される証明書
-$SigningCertificate    = "-----BEGIN <省略こんな感じで改行消して一行にして貼り付け>-----END CERTIFICATE-----"
+# GWSで表示される証明書
+$SigningCertificate = "-----BEGIN <省略こんな感じで改行消して一行にして貼り付け>-----END CERTIFICATE-----"
 
-# GWS側で表示されるエンティティID(URL)
-$IssuerURI = "<GWSで表示されるURL>"
+# GWSで表示されるエンティティID(URL)
+$IssuerURI = "<GWSで表示されるエンティティIDのURL>"
 
-# GWS側で表示されるログアウトURL
-$LogOffUri = "<GWSで表示されるURL>"
+# GWS側固定ログアウトURL
+$LogOffUri = "https://accounts.google.com/logout"
 
 # saml or wsFed
 $PreferredAuthenticationProtocol = "saml"
 
 New-MgDomainFederationConfiguration -DomainId $DomainName `
-                                    -DisplayName $DomainName `
+                                    -DisplayName $DisplayName `
                                     -FederatedIdpMfaBehavior $FederatedIdpMfaBehavior `
                                     -PassiveSignInUri $PassiveLogOnUrl `
                                     -ActiveSignInUri $ActiveLogOnUri `
