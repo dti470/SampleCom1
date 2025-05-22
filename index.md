@@ -18,3 +18,5 @@ Top Page
 [Edge OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/EdgeOMAURI.html)
 
 [Entra-GWS-SAML](https://dti470.github.io/SampleCom1/SubPages1/Entra-GWS-SAML.html)
+
+[Intune-OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/Intune-OMA-URI.html)
