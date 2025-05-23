@@ -11,6 +11,12 @@
 
 ```
 ChromeタスクマネージャでのChromeプロセス無効化許可
-./Device/Vendor/MSFT/Policy/Config/Chrome~Policy~googlechrome/TaskManagerEndProcessEnabled文字列
+./Device/Vendor/MSFT/Policy/Config/Chrome~Policy~googlechrome/TaskManagerEndProcessEnabled
+文字列
 <enabled/>
 ```
+
+[IncognitoModeAvailability-YesGWS](https://dti470.github.io/SampleCom1/SubPages1/Pic/IncognitoModeAvailability-YesGWS.png)
+[IncognitoModeAvailability-NoGWS](https://dti470.github.io/SampleCom1/SubPages1/Pic/IncognitoModeAvailability-NoGWS.png)
+[TaskManagerEndProcessEnabled-YesGWS](https://dti470.github.io/SampleCom1/SubPages1/Pic/TaskManagerEndProcessEnabled-YesGWS.png)
+[TaskManagerEndProcessEnabled-NoGWS](https://dti470.github.io/SampleCom1/SubPages1/Pic/TaskManagerEndProcessEnabled-NoGWS.png)
