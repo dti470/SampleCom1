@@ -12,7 +12,47 @@ https://support.google.com/a/answer/6152421?hl=ja&ref_topic=6152423&sjid=4267988
 ```
 ↑こっちには全然情報ない。
 
+Ver5.0.39 更新対応はこちらです。<br>
 
+Auth.ps1 → 変更不要
+
+task5.0.39.ps1 下記を修正<br>
+1行目
+```
+$taskName = "【テスト】Synchronize to Cloud Identity 5.0.39"
+```
+5行目
+```
+  -Argument "-ExecutionPolicy Bypass -NoProfile $gcdsDir\sync5.0.39.ps1 -config $gcdsDir\<コンフィグファイル名>.xml -gcdsInstallationDir '$Env:Programfiles\Google Cloud Directory Sync 5.0.39'" `
+```
+
+sync5.0.39.ps1 下記を修正<br>
+1行目
+```
+$taskName = "【テスト】Synchronize to Cloud Identity 5.0.39"
+```
+35行目 追加
+```
+$googleConfigNode.groupKeyMappingsFilePath = [System.IO.Path]::Combine((pwd).Path, "groupKeyMappingsFilePath.tsv")
+```
+
+その他
+```
+xmlメモ帳で編集するとBOM付になって使えなくなる。
+GCDS Ver 切り替えて、コンフィグ読み込んだら、1回保存、CMでOK、TaskでNGなら、再度CMで保存してみる。
+作業中のcm操作は、全部 clear cache
+xml切り替えたら、シミュレーションと変更を発生させての同期を実施、NGなら、認証やり直す。
+tsvには、明確に読み取りを LOCAL_SERVICEへ付与
+workフォルダには、明確に変更を LOCAL_SERVICEへ付与
+workフォルダの tsv は、変更が発生しないと生成されない。
+バックアップフォルダへ全部コピーで問題ない。
+Auth.ps1 / Task.ps1 / sync.ps1 / xml を残して、他は削除でOK。
+切り戻しと切り戻し後再度VerUp時は、バックアップフォルダからのコピーで問題ない。
+workフォルダには、
+Auth.ps1 / Task.ps1 / sync.ps1 / xml だけ持ってきて後は削除
+```
+
+Ver5.0.37 の時の話が下記です。<br>
 administrator は使わない。<br>
 下記全部、代替管理者ユーザBでの作業<br>
 タスク実行はLOCAL SERVICE システムアカウント<br>
