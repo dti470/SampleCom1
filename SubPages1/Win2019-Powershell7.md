@@ -66,9 +66,10 @@
 5)PowerShell 7 インストール後設定確認 ※ 再起動前後でも変化無<br>
 ![再起動前](https://dti470.github.io/SampleCom1/SubPages1/Pic/11.Win2019-PS7-BeforeRestart.png)
 ![再起動後](https://dti470.github.io/SampleCom1/SubPages1/Pic/12.Win2019-PS7-AfterRestart.png)
+![再起動後cmdVer](https://dti470.github.io/SampleCom1/SubPages1/Pic/15.Win2019-PS7-cmd-PSver.png)
 ![PSPath](https://dti470.github.io/SampleCom1/SubPages1/Pic/13.Win2019-PS7-PSPath.png)
 
 6)PowerBI 接続 Powershell 7<br>
-![接続](https://dti470.github.io/SampleCom1/SubPages1/Pic/14.Win2019-PS7Connect-PBI-.png)
+![接続](https://dti470.github.io/SampleCom1/SubPages1/Pic/14.Win2019-PS7Connect-PBI.png)
 
 以上
