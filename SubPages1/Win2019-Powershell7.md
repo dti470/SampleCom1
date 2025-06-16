@@ -63,7 +63,7 @@
 ![7](https://dti470.github.io/SampleCom1/SubPages1/Pic/09.Win2019-PS7-Install7.png)
 ![8](https://dti470.github.io/SampleCom1/SubPages1/Pic/10.Win2019-PS7-Install7.png)
 
-5)PowerShell 7 インストール後設定確認<br>
+5)PowerShell 7 インストール後設定確認 ※ 再起動前後でも変化無<br>
 ![再起動前](https://dti470.github.io/SampleCom1/SubPages1/Pic/11.Win2019-PS7-BeforeRestart.png)
 ![再起動後](https://dti470.github.io/SampleCom1/SubPages1/Pic/12.Win2019-PS7-AfterRestart.png)
 ![PSPath](https://dti470.github.io/SampleCom1/SubPages1/Pic/13.Win2019-PS7-PSPath.png)
