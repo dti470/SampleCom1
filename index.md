@@ -20,3 +20,5 @@ Top Page
 [Entra-GWS-SAML](https://dti470.github.io/SampleCom1/SubPages1/Entra-GWS-SAML.html)
 
 [Intune-OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/Intune-OMA-URI.html)
+
+[Win2019 PS7](https://dti470.github.io/SampleCom1/SubPages1/Win2019-Powershell7.html)
