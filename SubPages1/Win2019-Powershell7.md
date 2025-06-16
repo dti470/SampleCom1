@@ -25,6 +25,7 @@
     ○ PS7 で、Az モジュールをCurrent/Allいずれでインストールしても、PS5.1で Get-Module -ListAvailable で検索できない。
     × PS7 で、PowerBIのPowerShellをCurrent/Allいずれで再インストールしても追加されなかった。
     → PS5.1 でインストールしたモジュールを上書きした可能性がある。
+    　※フォルダ/ファイルのタイムスタンプは更新されなかった。
 ```
 
 ・参考<br>
