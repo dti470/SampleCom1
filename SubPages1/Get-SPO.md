@@ -8,7 +8,7 @@ Connect-SPOService -Url $adminUrl
 
 【画面表示だけ】<br>
 ```
-Get-SPOUser -Limit All -Site $siteUrl | 
+Get-SPOUser -Limit All -Site $siteUrl
 ```
 ```
 Get-SPOSiteGroup -Limit 2147483647 -Site $siteUrl
