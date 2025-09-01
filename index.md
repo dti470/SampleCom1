@@ -22,3 +22,5 @@ Top Page
 [Intune-OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/Intune-OMA-URI.html)
 
 [Win2019 PS7](https://dti470.github.io/SampleCom1/SubPages1/Win2019-Powershell7.html)
+
+[Get-SPO](https://dti470.github.io/SampleCom1/SubPages1/Get-SPO.html)
