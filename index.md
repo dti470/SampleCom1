@@ -25,4 +25,4 @@ Top Page
 
 [Get-SPO](https://dti470.github.io/SampleCom1/SubPages1/Get-SPO.html)
 
-[Python](https://dti470.github.io/SampleCom1/SubPages1/python.html)
+<a href="https://dti470.github.io/SampleCom1/SubPages1/python.py" download="python.py">Pythonコードをダウンロード</a>
