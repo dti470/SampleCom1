@@ -13,7 +13,7 @@ Top Page
 
 [CustomPolicy](https://dti470.github.io/SampleCom1/SubPages1/CustomPolicy.html)
 
-[GWS Directory Sync](https://dti470.github.io/SampleCom1/SubPages1/DirectorySync.html)
+[Gooogle Cloud Directory Sync](https://dti470.github.io/SampleCom1/SubPages1/GoogleCloudDirectorySync.html)
 
 [Edge OMA-URI](https://dti470.github.io/SampleCom1/SubPages1/EdgeOMAURI.html)
 
@@ -24,3 +24,5 @@ Top Page
 [Win2019 PS7](https://dti470.github.io/SampleCom1/SubPages1/Win2019-Powershell7.html)
 
 [Get-SPO](https://dti470.github.io/SampleCom1/SubPages1/Get-SPO.html)
+
+[Python](https://dti470.github.io/SampleCom1/SubPages1/python.html)
