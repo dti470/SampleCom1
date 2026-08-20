@@ -20,7 +20,8 @@ function prepareSpreadsheet() {
     }
     return sheet;
   };
-  setupSheet('ユーザー一覧', ['Email', '処理ステータス']);
+  // 列を追加: アカウント状態
+  setupSheet('ユーザー一覧', ['Email', 'アカウント状態', '処理ステータス']);
   setupSheet('オーナー不在カレンダー', ['カレンダーID', 'カレンダー名', '共有先', '備考']);
   setupSheet('調査済みキャッシュ', ['カレンダーID', 'オーナー有無']);
 }
@@ -43,15 +44,19 @@ function fetchAllUsers() {
       });
       const items = response.users;
       if (items && items.length > 0) {
-        items.forEach(user => users.push([user.primaryEmail, '']));
+        // user.suspended で停止中かどうかを判定
+        items.forEach(user => {
+          const accountStatus = user.suspended ? '停止' : 'アクティブ';
+          users.push([user.primaryEmail, accountStatus, '']);
+        });
       }
       pageToken = response.nextPageToken;
     } while (pageToken);
 
     if (users.length > 0) {
       const lastRow = Math.max(sheet.getLastRow(), 2);
-      sheet.getRange(2, 1, lastRow, 2).clearContent();
-      sheet.getRange(2, 1, users.length, 2).setValues(users);
+      sheet.getRange(2, 1, lastRow, 3).clearContent();
+      sheet.getRange(2, 1, users.length, 3).setValues(users);
     }
     SpreadsheetApp.getUi().alert(`${users.length} 人のユーザーをリストアップしました。`);
   } catch (e) {
@@ -60,7 +65,7 @@ function fetchAllUsers() {
 }
 
 // ==========================================
-// 2. バッチ処理メインロジック（最適化版）
+// 2. バッチ処理メインロジック
 // ==========================================
 function startBatch() {
   prepareSpreadsheet();
@@ -72,14 +77,15 @@ function startBatch() {
   const orphanSheet = ss.getSheetByName('オーナー不在カレンダー');
   const checkedSheet = ss.getSheetByName('調査済みキャッシュ');
 
-  // 有効なユーザー一覧をメモリにロード（退職者判定用）
+  // メモリにユーザーのアカウント状態をマップとして保持（Map<Email, Status>）
   const userData = userSheet.getDataRange().getValues();
-  const validUsers = new Set();
+  const validUsersMap = new Map();
   for (let i = 1; i < userData.length; i++) {
-    if (userData[i][0]) validUsers.add(userData[i][0]);
+    if (userData[i][0]) {
+      validUsersMap.set(userData[i][0], userData[i][1]);
+    }
   }
 
-  // キャッシュの読み込み
   const checkedData = checkedSheet.getDataRange().getValues();
   let checkedCals = {};
   for (let i = 1; i < checkedData.length; i++) {
@@ -90,9 +96,10 @@ function startBatch() {
 
   for (let i = 1; i < userData.length; i++) {
     const userEmail = userData[i][0];
-    const status = userData[i][1];
+    const accountStatus = userData[i][1];
+    const processStatus = userData[i][2];
 
-    if (status !== '') continue;
+    if (processStatus !== '') continue;
 
     if (Date.now() - startTime > TIME_LIMIT) {
       console.log('制限時間が近づいたため、1分後に処理を再開します。');
@@ -104,7 +111,6 @@ function startBatch() {
       const token = getAccessToken(userEmail);
       if (!token) throw new Error('アクセストークン取得失敗');
 
-      // 新パラメータ(showOwnOrganization=true)を用いたAPI実行
       const calendars = fetchCalendarList(token);
 
       for (let cal of calendars) {
@@ -115,53 +121,51 @@ function startBatch() {
         if (checkedCals.hasOwnProperty(calId)) continue;
 
         let hasValidOwner = false;
-        let isDeletedOwner = false;
-        
-        // 新フィールド dataOwner による一時判定
+        let ownerStatusNote = '';
         const dataOwner = cal.dataOwner; 
 
         if (dataOwner) {
-          if (validUsers.has(dataOwner)) {
-            hasValidOwner = true; // 有効なユーザーがオーナー
+          if (validUsersMap.has(dataOwner)) {
+            const ownerStatus = validUsersMap.get(dataOwner);
+            if (ownerStatus === 'アクティブ') {
+              hasValidOwner = true; // 完全なアクティブユーザーのみOK
+            } else {
+              ownerStatusNote = `停止中オーナー(${dataOwner})`; // 停止中ユーザー
+            }
           } else {
-            isDeletedOwner = true; // リストにないため退職済みとみなす
+            ownerStatusNote = `退職済みオーナー(${dataOwner})`; // リストに存在しない
           }
         }
 
         if (hasValidOwner) {
-          // 有効なオーナーがいる場合はACLを叩かずにキャッシュへ
           checkedCals[calId] = true;
           checkedSheet.appendRow([calId, true]);
         } else {
-          // dataOwnerが空、または退職済みと判定された場合のみACLを取得（API大幅削減）
+          // dataOwnerが空、停止中、または退職済みの場合ACLを取得
           const aclResult = checkCalendarAcl(calId, token);
           
           checkedCals[calId] = false;
           checkedSheet.appendRow([calId, false]);
 
-          let noteStr = '';
-          if (isDeletedOwner) {
-            noteStr = `退職済みオーナー(${dataOwner})`;
-          } else {
-            noteStr = 'オーナー不在';
-          }
+          let finalNote = ownerStatusNote || 'オーナー不在';
           if (aclResult.note) {
-            noteStr += ` / ${aclResult.note}`;
+            finalNote += ` / ${aclResult.note}`;
           }
 
           orphanSheet.appendRow([
             calId, 
             cal.summary, 
             aclResult.sharedWith.join(', '), 
-            noteStr
+            finalNote
           ]);
         }
       }
-      userSheet.getRange(i + 1, 2).setValue('完了');
+      userSheet.getRange(i + 1, 3).setValue('完了'); // 3列目にステータス書き込み
     } catch (e) {
-      userSheet.getRange(i + 1, 2).setValue('エラー: ' + e.message);
+      userSheet.getRange(i + 1, 3).setValue('エラー: ' + e.message);
     }
     processedCount++;
+    Utilities.sleep(100);
   }
   
   deleteTriggers();
@@ -172,16 +176,27 @@ function startBatch() {
 // 補助関数
 // ==========================================
 function fetchCalendarList(token) {
-  // 自組織カレンダーのみに絞り込むパラメータを追加
-  const url = 'https://www.googleapis.com/calendar/v3/users/me/calendarList?showOwnOrganization=true';
-  const options = {
-    method: 'get',
-    headers: { Authorization: 'Bearer ' + token },
-    muteHttpExceptions: true
-  };
-  const response = UrlFetchApp.fetch(url, options);
-  const data = JSON.parse(response.getContentText());
-  return data.items || [];
+  let calendars = [];
+  let pageToken = '';
+  do {
+    let url = 'https://www.googleapis.com/calendar/v3/users/me/calendarList?showOwnOrganizationOnly=true&maxResults=250';
+    if (pageToken) {
+      url += '&pageToken=' + encodeURIComponent(pageToken);
+    }
+    const options = {
+      method: 'get',
+      headers: { Authorization: 'Bearer ' + token },
+      muteHttpExceptions: true
+    };
+    const response = UrlFetchApp.fetch(url, options);
+    const data = JSON.parse(response.getContentText());
+    
+    if (data.items && data.items.length > 0) {
+      calendars = calendars.concat(data.items);
+    }
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+  return calendars;
 }
 
 function checkCalendarAcl(calendarId, token) {
@@ -207,13 +222,11 @@ function checkCalendarAcl(calendarId, token) {
   for (let rule of rules) {
     if (rule.role === 'owner') {
       hasOwner = true;
-      // 今回はdataOwner判定を優先するためbreakせずに共有先も取得し続ける
     }
     if (rule.scope && rule.scope.value) {
       sharedWith.push(`${rule.scope.value} (${rule.role})`);
     }
   }
-
   return { hasOwner: hasOwner, sharedWith: sharedWith, note: '' };
 }
 
