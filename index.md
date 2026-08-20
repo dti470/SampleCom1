@@ -26,3 +26,5 @@ Top Page
 [Get-SPO](https://dti470.github.io/SampleCom1/SubPages1/Get-SPO.html)
 
 <a href="https://dti470.github.io/SampleCom1/SubPages1/python.py" download="python.py">Pythonコードをダウンロード</a>
+
+<a href="https://dti470.github.io/SampleCom1/SubPages1/SecCalGas.txt" download="SecCalGas.txt">セカンダリGASコードをダウンロード</a>
