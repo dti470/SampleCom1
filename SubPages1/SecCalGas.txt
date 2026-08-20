@@ -1,0 +1,246 @@
+const SCRIPT_PROPERTIES = PropertiesService.getScriptProperties();
+
+// ==========================================
+// カスタムメニューの追加（スプレッドシートを開いた時に実行）
+// ==========================================
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('📅 カレンダー調査')
+    .addItem('1. ユーザー一覧の取得', 'fetchAllUsers')
+    .addItem('2. オーナー不在カレンダー調査の開始', 'startBatch')
+    .addToUi();
+}
+
+// ==========================================
+// 0. スプレッドシートの自動セットアップ（日本語化）
+// ==========================================
+function prepareSpreadsheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  const setupSheet = (sheetName, headers) => {
+    let sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      sheet.appendRow(headers);
+      sheet.setFrozenRows(1); // 1行目を固定
+      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold"); // 太字
+    }
+    return sheet;
+  };
+
+  setupSheet('ユーザー一覧', ['Email', '処理ステータス']);
+  setupSheet('オーナー不在カレンダー', ['カレンダーID', 'カレンダー名', '共有先', '備考']);
+  setupSheet('調査済みキャッシュ', ['カレンダーID', 'オーナー有無']);
+}
+
+// ==========================================
+// 1. 全ユーザーの取得とシートへの書き出し
+// ==========================================
+function fetchAllUsers() {
+  prepareSpreadsheet();
+  const domain = SCRIPT_PROPERTIES.getProperty('TARGET_DOMAIN');
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('ユーザー一覧');
+  
+  let pageToken = '';
+  let users = [];
+  
+  try {
+    do {
+      const response = AdminDirectory.Users.list({
+        domain: domain,
+        maxResults: 500,
+        pageToken: pageToken
+      });
+      const items = response.users;
+      if (items && items.length > 0) {
+        items.forEach(user => users.push([user.primaryEmail, '']));
+      }
+      pageToken = response.nextPageToken;
+    } while (pageToken);
+
+    if (users.length > 0) {
+      // 既存データをクリアして2行目以降に書き出し
+      const lastRow = Math.max(sheet.getLastRow(), 2);
+      sheet.getRange(2, 1, lastRow, 2).clearContent();
+      sheet.getRange(2, 1, users.length, 2).setValues(users);
+    }
+    SpreadsheetApp.getUi().alert(`${users.length} 人のユーザーをリストアップしました。`);
+  } catch (e) {
+    SpreadsheetApp.getUi().alert(`エラーが発生しました: ${e.message}\n※Admin SDK APIが有効になっているか、プロパティ(TARGET_DOMAIN)が正しいか確認してください。`);
+  }
+}
+
+// ==========================================
+// 2. バッチ処理メインロジック（4.5分で中断・再開）
+// ==========================================
+function startBatch() {
+  prepareSpreadsheet();
+  const startTime = Date.now();
+  const TIME_LIMIT = 4.5 * 60 * 1000; // 4.5分で中断
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const userSheet = ss.getSheetByName('ユーザー一覧');
+  const orphanSheet = ss.getSheetByName('オーナー不在カレンダー');
+  const checkedSheet = ss.getSheetByName('調査済みキャッシュ');
+
+  // キャッシュの読み込み（APIコール節約）
+  const checkedData = checkedSheet.getDataRange().getValues();
+  let checkedCals = {};
+  for (let i = 1; i < checkedData.length; i++) {
+    checkedCals[checkedData[i][0]] = checkedData[i][1]; // IDとオーナー有無のキャッシュ
+  }
+
+  const userData = userSheet.getDataRange().getValues();
+  let processedCount = 0;
+
+  for (let i = 1; i < userData.length; i++) {
+    const userEmail = userData[i][0];
+    const status = userData[i][1];
+
+    if (status !== '') continue; // 処理済み（またはエラー）はスキップ
+
+    if (Date.now() - startTime > TIME_LIMIT) {
+      console.log('制限時間が近づいたため、1分後に処理を再開します。');
+      setNextTrigger('startBatch');
+      return;
+    }
+
+    try {
+      const token = getAccessToken(userEmail);
+      if (!token) throw new Error('アクセストークン取得失敗');
+
+      const calendars = fetchCalendarList(token);
+
+      for (let cal of calendars) {
+        const calId = cal.id;
+        
+        // プライマリカレンダー、および日本の祝日等の公開カレンダーを除外
+        if (cal.primary) continue;
+        if (calId.includes('group.v.calendar.google.com') || calId.includes('import.calendar.google.com')) continue;
+
+        if (checkedCals.hasOwnProperty(calId)) continue; // 調査済みはスキップ
+
+        // 自身がオーナーの場合は問題なし
+        if (cal.accessRole === 'owner') {
+          checkedCals[calId] = true;
+          checkedSheet.appendRow([calId, true]);
+          continue;
+        }
+
+        // オーナーではない場合、ACLを調査
+        const aclResult = checkCalendarAcl(calId, token);
+        
+        if (aclResult.hasOwner) {
+          checkedCals[calId] = true;
+          checkedSheet.appendRow([calId, true]);
+        } else {
+          checkedCals[calId] = false;
+          checkedSheet.appendRow([calId, false]);
+          orphanSheet.appendRow([
+            calId, 
+            cal.summary, 
+            aclResult.sharedWith.join(', '), 
+            aclResult.note
+          ]);
+        }
+      }
+      userSheet.getRange(i + 1, 2).setValue('完了');
+    } catch (e) {
+      userSheet.getRange(i + 1, 2).setValue('エラー: ' + e.message);
+    }
+    processedCount++;
+  }
+  
+  deleteTriggers();
+  SpreadsheetApp.getActiveSpreadsheet().toast('すべてのユーザーの処理が完了しました。');
+}
+
+// ==========================================
+// 補助関数
+// ==========================================
+function fetchCalendarList(token) {
+  const url = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
+  const options = {
+    method: 'get',
+    headers: { Authorization: 'Bearer ' + token },
+    muteHttpExceptions: true
+  };
+  const response = UrlFetchApp.fetch(url, options);
+  const data = JSON.parse(response.getContentText());
+  return data.items || [];
+}
+
+function checkCalendarAcl(calendarId, token) {
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/acl`;
+  const options = {
+    method: 'get',
+    headers: { Authorization: 'Bearer ' + token },
+    muteHttpExceptions: true
+  };
+  const response = UrlFetchApp.fetch(url, options);
+  const responseCode = response.getResponseCode();
+  
+  if (responseCode === 403 || responseCode === 404) {
+    return { hasOwner: false, sharedWith: ['N/A'], note: 'アクセス権限不足で詳細取得不可' };
+  }
+
+  const data = JSON.parse(response.getContentText());
+  const rules = data.items || [];
+  
+  let hasOwner = false;
+  let sharedWith = [];
+
+  for (let rule of rules) {
+    if (rule.role === 'owner') {
+      hasOwner = true;
+      break;
+    }
+    if (rule.scope && rule.scope.value) {
+      sharedWith.push(`${rule.scope.value} (${rule.role})`);
+    }
+  }
+
+  return { hasOwner: hasOwner, sharedWith: sharedWith, note: '' };
+}
+
+function getAccessToken(userEmail) {
+  const privateKey = SCRIPT_PROPERTIES.getProperty('PRIVATE_KEY').replace(/\\n/g, '\n');
+  const clientEmail = SCRIPT_PROPERTIES.getProperty('CLIENT_EMAIL');
+  
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const claimSet = {
+    iss: clientEmail,
+    sub: userEmail,
+    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now
+  };
+
+  const encode = (obj) => Utilities.base64EncodeWebSafe(JSON.stringify(obj));
+  const signatureInput = encode(header) + '.' + encode(claimSet);
+  const signature = Utilities.computeRsaSha256Signature(signatureInput, privateKey);
+  const jwt = signatureInput + '.' + Utilities.base64EncodeWebSafe(signature);
+
+  const options = {
+    method: 'post',
+    payload: { grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt },
+    muteHttpExceptions: true
+  };
+
+  const response = UrlFetchApp.fetch('https://oauth2.googleapis.com/token', options);
+  const result = JSON.parse(response.getContentText());
+  return result.access_token || null;
+}
+
+function setNextTrigger(functionName) {
+  deleteTriggers();
+  ScriptApp.newTrigger(functionName).timeBased().after(60 * 1000).create();
+}
+
+function deleteTriggers() {
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => ScriptApp.deleteTrigger(trigger));
+}
