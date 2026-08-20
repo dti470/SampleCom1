@@ -1,8 +1,5 @@
 const SCRIPT_PROPERTIES = PropertiesService.getScriptProperties();
 
-// ==========================================
-// カスタムメニューの追加（スプレッドシートを開いた時に実行）
-// ==========================================
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('📅 カレンダー調査')
@@ -11,31 +8,23 @@ function onOpen() {
     .addToUi();
 }
 
-// ==========================================
-// 0. スプレッドシートの自動セットアップ（日本語化）
-// ==========================================
 function prepareSpreadsheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  
   const setupSheet = (sheetName, headers) => {
     let sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
       sheet.appendRow(headers);
-      sheet.setFrozenRows(1); // 1行目を固定
-      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold"); // 太字
+      sheet.setFrozenRows(1);
+      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
     }
     return sheet;
   };
-
   setupSheet('ユーザー一覧', ['Email', '処理ステータス']);
   setupSheet('オーナー不在カレンダー', ['カレンダーID', 'カレンダー名', '共有先', '備考']);
   setupSheet('調査済みキャッシュ', ['カレンダーID', 'オーナー有無']);
 }
 
-// ==========================================
-// 1. 全ユーザーの取得とシートへの書き出し
-// ==========================================
 function fetchAllUsers() {
   prepareSpreadsheet();
   const domain = SCRIPT_PROPERTIES.getProperty('TARGET_DOMAIN');
@@ -60,45 +49,50 @@ function fetchAllUsers() {
     } while (pageToken);
 
     if (users.length > 0) {
-      // 既存データをクリアして2行目以降に書き出し
       const lastRow = Math.max(sheet.getLastRow(), 2);
       sheet.getRange(2, 1, lastRow, 2).clearContent();
       sheet.getRange(2, 1, users.length, 2).setValues(users);
     }
     SpreadsheetApp.getUi().alert(`${users.length} 人のユーザーをリストアップしました。`);
   } catch (e) {
-    SpreadsheetApp.getUi().alert(`エラーが発生しました: ${e.message}\n※Admin SDK APIが有効になっているか、プロパティ(TARGET_DOMAIN)が正しいか確認してください。`);
+    SpreadsheetApp.getUi().alert(`エラーが発生しました: ${e.message}`);
   }
 }
 
 // ==========================================
-// 2. バッチ処理メインロジック（4.5分で中断・再開）
+// 2. バッチ処理メインロジック（最適化版）
 // ==========================================
 function startBatch() {
   prepareSpreadsheet();
   const startTime = Date.now();
-  const TIME_LIMIT = 4.5 * 60 * 1000; // 4.5分で中断
+  const TIME_LIMIT = 4.5 * 60 * 1000;
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const userSheet = ss.getSheetByName('ユーザー一覧');
   const orphanSheet = ss.getSheetByName('オーナー不在カレンダー');
   const checkedSheet = ss.getSheetByName('調査済みキャッシュ');
 
-  // キャッシュの読み込み（APIコール節約）
+  // 有効なユーザー一覧をメモリにロード（退職者判定用）
+  const userData = userSheet.getDataRange().getValues();
+  const validUsers = new Set();
+  for (let i = 1; i < userData.length; i++) {
+    if (userData[i][0]) validUsers.add(userData[i][0]);
+  }
+
+  // キャッシュの読み込み
   const checkedData = checkedSheet.getDataRange().getValues();
   let checkedCals = {};
   for (let i = 1; i < checkedData.length; i++) {
-    checkedCals[checkedData[i][0]] = checkedData[i][1]; // IDとオーナー有無のキャッシュ
+    checkedCals[checkedData[i][0]] = checkedData[i][1];
   }
 
-  const userData = userSheet.getDataRange().getValues();
   let processedCount = 0;
 
   for (let i = 1; i < userData.length; i++) {
     const userEmail = userData[i][0];
     const status = userData[i][1];
 
-    if (status !== '') continue; // 処理済み（またはエラー）はスキップ
+    if (status !== '') continue;
 
     if (Date.now() - startTime > TIME_LIMIT) {
       console.log('制限時間が近づいたため、1分後に処理を再開します。');
@@ -110,38 +104,56 @@ function startBatch() {
       const token = getAccessToken(userEmail);
       if (!token) throw new Error('アクセストークン取得失敗');
 
+      // 新パラメータ(showOwnOrganization=true)を用いたAPI実行
       const calendars = fetchCalendarList(token);
 
       for (let cal of calendars) {
         const calId = cal.id;
         
-        // プライマリカレンダー、および日本の祝日等の公開カレンダーを除外
         if (cal.primary) continue;
         if (calId.includes('group.v.calendar.google.com') || calId.includes('import.calendar.google.com')) continue;
+        if (checkedCals.hasOwnProperty(calId)) continue;
 
-        if (checkedCals.hasOwnProperty(calId)) continue; // 調査済みはスキップ
+        let hasValidOwner = false;
+        let isDeletedOwner = false;
+        
+        // 新フィールド dataOwner による一時判定
+        const dataOwner = cal.dataOwner; 
 
-        // 自身がオーナーの場合は問題なし
-        if (cal.accessRole === 'owner') {
-          checkedCals[calId] = true;
-          checkedSheet.appendRow([calId, true]);
-          continue;
+        if (dataOwner) {
+          if (validUsers.has(dataOwner)) {
+            hasValidOwner = true; // 有効なユーザーがオーナー
+          } else {
+            isDeletedOwner = true; // リストにないため退職済みとみなす
+          }
         }
 
-        // オーナーではない場合、ACLを調査
-        const aclResult = checkCalendarAcl(calId, token);
-        
-        if (aclResult.hasOwner) {
+        if (hasValidOwner) {
+          // 有効なオーナーがいる場合はACLを叩かずにキャッシュへ
           checkedCals[calId] = true;
           checkedSheet.appendRow([calId, true]);
         } else {
+          // dataOwnerが空、または退職済みと判定された場合のみACLを取得（API大幅削減）
+          const aclResult = checkCalendarAcl(calId, token);
+          
           checkedCals[calId] = false;
           checkedSheet.appendRow([calId, false]);
+
+          let noteStr = '';
+          if (isDeletedOwner) {
+            noteStr = `退職済みオーナー(${dataOwner})`;
+          } else {
+            noteStr = 'オーナー不在';
+          }
+          if (aclResult.note) {
+            noteStr += ` / ${aclResult.note}`;
+          }
+
           orphanSheet.appendRow([
             calId, 
             cal.summary, 
             aclResult.sharedWith.join(', '), 
-            aclResult.note
+            noteStr
           ]);
         }
       }
@@ -160,7 +172,8 @@ function startBatch() {
 // 補助関数
 // ==========================================
 function fetchCalendarList(token) {
-  const url = 'https://www.googleapis.com/calendar/v3/users/me/calendarList';
+  // 自組織カレンダーのみに絞り込むパラメータを追加
+  const url = 'https://www.googleapis.com/calendar/v3/users/me/calendarList?showOwnOrganization=true';
   const options = {
     method: 'get',
     headers: { Authorization: 'Bearer ' + token },
@@ -194,7 +207,7 @@ function checkCalendarAcl(calendarId, token) {
   for (let rule of rules) {
     if (rule.role === 'owner') {
       hasOwner = true;
-      break;
+      // 今回はdataOwner判定を優先するためbreakせずに共有先も取得し続ける
     }
     if (rule.scope && rule.scope.value) {
       sharedWith.push(`${rule.scope.value} (${rule.role})`);
