@@ -28,3 +28,5 @@ Top Page
 <a href="https://dti470.github.io/SampleCom1/SubPages1/python.py" download="python.py">Pythonコードをダウンロード</a>
 
 <a href="https://dti470.github.io/SampleCom1/SubPages1/SecCalGas.txt" download="SecCalGas.txt">セカンダリGASコードをダウンロード</a>
+
+<a href="https://dti470.github.io/SampleCom1/SubPages1/ダウンロードテスト用.xlsx" download="ダウンロードテスト用.xlsx">Excelファイルをダウンロード</a>
