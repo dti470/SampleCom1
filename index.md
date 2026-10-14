@@ -30,3 +30,5 @@ Top Page
 <a href="https://dti470.github.io/SampleCom1/SubPages1/SecCalGas.txt" download="SecCalGas.txt">セカンダリGASコードをダウンロード</a>
 
 <a href="https://dti470.github.io/SampleCom1/SubPages1/ダウンロードテスト用.xlsx" download="ダウンロードテスト用.xlsx">Excelファイルをダウンロード</a>
+
+[GCDS 5.0.45 画像一覧](https://dti470.github.io/SampleCom1/SubPages1/GCDS5.0.45.html)
